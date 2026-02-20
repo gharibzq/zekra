@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الصدارة - ذِكرىٰ</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .credits-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2.5rem;
+            background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.05));
+            border-radius: var(--radius);
+            border-bottom: 3px solid var(--accent);
+        }
+
+        body.dark-mode .credits-header {
+            background: linear-gradient(135deg, rgba(5, 150, 105, 0.15), rgba(16, 185, 129, 0.1));
+        }
+
+        .credits-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        body.dark-mode .credits-header h1 {
+            color: var(--primary-light);
+        }
+
+        .credits-header p {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        body.dark-mode .credits-header p {
+            color: var(--text-dark);
+        }
+
+        .credits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .credit-card {
+            background: var(--card-light);
+            border-radius: var(--radius);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-mode .credit-card {
+            background: var(--card-dark);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .credit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        body.dark-mode .credit-card:hover {
+            border-color: var(--primary-light);
+        }
+
+        .credit-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .credit-card:hover::before {
+            opacity: 1;
+        }
+
+        .credit-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.05));
+            width: 100px;
+            height: 100px;
+            line-height: 100px;
+            border-radius: 50%;
+            color: var(--primary);
+        }
+
+        body.dark-mode .credit-icon {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--primary-light);
+        }
+
+        .founder-icon {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.05));
+            color: var(--accent);
+        }
+
+        body.dark-mode .founder-icon {
+            background: rgba(245, 158, 11, 0.15);
+        }
+
+        .credit-name {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        body.dark-mode .credit-name {
+            color: var(--text-dark);
+        }
+
+        .credit-role {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        body.dark-mode .credit-role {
+            color: var(--primary-light);
+        }
+
+        .founder-role {
+            color: var(--accent);
+        }
+
+        .credit-description {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        body.dark-mode .credit-description {
+            color: var(--text-dark);
+        }
+
+        @media (max-width: 768px) {
+            .credits-header {
+                padding: 1.5rem;
+            }
+
+            .credits-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .credit-card {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">🕌 ذِكرىٰ</a>
+            <div class="header-right">
+                <div class="points-badge" onclick="editUserName()" title="اضغط لتغيير اسمك">
+                    <span class="user-name-display">زائر</span>
+                    <span class="points-separator">|</span>
+                    <span class="pts-val" id="totalPoints">0</span> نقطة
+                </div>
+                <div class="nav-menu">
+                    <a href="index.html" class="nav-link">الرئيسية</a>
+                    <a href="quran.html" class="nav-link">القرآن</a>
+                    <a href="dhikr.html" class="nav-link">الأذكار</a>
+                    <a href="rosary.html" class="nav-link">المسبحة</a>
+                    <a href="about.html" class="nav-link active">لوحة الصدارة</a>
+                </div>
+                <button class="theme-toggle" id="darkModeToggle">🌙 الوضع الليلي</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="credits-header">
+            <h1>🏆 لوحة الشرف (الأعلى نقاطاً)</h1>
+            <p>ترتيب المستخدمين حسب الأكثر تفاعلاً وجمعاً للنقاط.</p>
+        </div>
+
+        <div class="leaderboard-list" id="leaderboardList">
+            <!-- سيتم إضافة المتصدرين هنا عبر الجافاسكريبت -->
+        </div>
+    </div>
+
+    <style>
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .lb-item {
+            display: flex;
+            align-items: center;
+            background: var(--card-light);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease;
+        }
+
+        body.dark-mode .lb-item {
+            background: var(--card-dark);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .lb-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .lb-rank {
+            font-size: 2rem;
+            min-width: 60px;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .lb-icon {
+            font-size: 2.5rem;
+            margin-right: 1rem;
+            margin-left: 1.5rem;
+            background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.05));
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        body.dark-mode .lb-icon {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .lb-details {
+            flex: 1;
+        }
+
+        .lb-name {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-light);
+            margin-bottom: 0.2rem;
+        }
+
+        body.dark-mode .lb-name {
+            color: var(--text-dark);
+        }
+
+        .lb-role {
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        body.dark-mode .lb-role {
+            color: var(--primary-light);
+        }
+
+        .lb-points {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+            text-align: left;
+            min-width: 100px;
+        }
+
+        .lb-item.is-current {
+            border: 2px solid var(--primary);
+            background: rgba(5, 150, 105, 0.05);
+        }
+
+        body.dark-mode .lb-item.is-current {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--primary-light);
+        }
+
+        /* تنسيقات الهواتف المحمولة لجعل النقاط تحت الاسم */
+        @media (max-width: 600px) {
+            .lb-item {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 0.5rem;
+                padding: 1.5rem;
+                position: relative;
+            }
+
+            .lb-rank {
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                min-width: unset;
+                font-size: 1.5rem;
+            }
+
+            .lb-icon {
+                margin: 0 0 0.5rem 0;
+            }
+
+            .lb-points {
+                margin-top: 0.5rem;
+                text-align: center;
+                width: 100%;
+            }
+        }
+    </style>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+    <script type="module" src="firebase.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // انتظار ثانية صغيرة لضمان تحميل وحدة Firebase
+            setTimeout(() => {
+                if (typeof window.renderGlobalLeaderboard === 'function') {
+                    window.renderGlobalLeaderboard();
+                }
+            }, 500);
+        });
+    </script>
+</body>
+
+</html>

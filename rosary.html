@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المسبحة الإلكترونية - ذِكرىٰ</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .rosary-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .rosary-title {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            font-weight: 800;
+        }
+
+        body.dark-mode .rosary-title {
+            color: var(--primary-light);
+        }
+
+        .rosary-counter {
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--primary);
+            background: var(--card-light);
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: 0 10px 30px rgba(5, 150, 105, 0.2);
+            border: 10px solid rgba(5, 150, 105, 0.1);
+            margin-bottom: 3rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body.dark-mode .rosary-counter {
+            background: var(--card-dark);
+            color: var(--primary-light);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.1);
+        }
+
+        .rosary-counter:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 15px rgba(5, 150, 105, 0.3);
+        }
+
+        .rosary-controls {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn-reset-rosary {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-reset-rosary:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .vibration-toggle {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .vibration-toggle:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .vibration-toggle.disabled {
+            background: var(--text-muted);
+        }
+
+        .rosary-text {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        body.dark-mode .rosary-text {
+            color: var(--text-dark);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">🕌 ذِكرىٰ</a>
+            <div class="header-right">
+                <div class="points-badge" onclick="editUserName()" title="اضغط لتغيير اسمك">
+                    <span class="user-name-display">زائر</span>
+                    <span class="points-separator">|</span>
+                    <span class="pts-val" id="totalPoints">0</span> نقطة
+                </div>
+                <div class="nav-menu">
+                    <a href="index.html" class="nav-link">الرئيسية</a>
+                    <a href="quran.html" class="nav-link">القرآن</a>
+                    <a href="dhikr.html" class="nav-link">الأذكار</a>
+                    <a href="rosary.html" class="nav-link active">المسبحة</a>
+                    <a href="about.html" class="nav-link">لوحة الصدارة</a>
+                </div>
+                <button class="theme-toggle" id="darkModeToggle">🌙 الوضع الليلي</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="rosary-container card">
+            <h1 class="rosary-title">المسبحة الإلكترونية</h1>
+            <div class="rosary-text" id="rosaryText">سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ، وَلَا إِلَهَ إِلَّا
+                اللَّهُ، وَاللَّهُ أَكْبَرُ</div>
+
+            <div class="rosary-counter" id="rosaryCounter">0</div>
+
+            <div class="rosary-controls">
+                <button class="btn-reset-rosary" id="resetRosary">تصفير العداد 🔄</button>
+                <button class="vibration-toggle" id="vibrationToggle">الاهتزاز: مفعل 📳</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const counterElement = document.getElementById('rosaryCounter');
+            const resetButton = document.getElementById('resetRosary');
+            const vibrationButton = document.getElementById('vibrationToggle');
+
+            let count = parseInt(localStorage.getItem('rosaryCount')) || 0;
+            let vibrationEnabled = localStorage.getItem('rosaryVibration') !== 'false'; // افتراضياً مفعل
+
+            // تهيئة واجهة المستخدم
+            counterElement.textContent = count;
+            updateVibrationButton();
+
+            // وظيفة الضغط على العداد للسبحة
+            counterElement.addEventListener('click', () => {
+                count++;
+                counterElement.textContent = count;
+                localStorage.setItem('rosaryCount', count);
+
+                // إضافة نقاط كل مائة تسبيحة
+                if (count > 0 && count % 100 === 0) {
+                    addPoints(50, `إتمام 100 تسبيحة (+50 نقطة)`);
+                }
+
+                // تفعيل الاهتزاز إذا كان مسموحاً وخاصية الاهتزاز مدعومة في المتصفح/الجهاز
+                if (vibrationEnabled && navigator.vibrate) {
+                    navigator.vibrate(30); // اهتزاز خفيف جدا لمدة 30 ملي ثانية
+                }
+            });
+
+            // تصفير العداد
+            resetButton.addEventListener('click', () => {
+                count = 0;
+                counterElement.textContent = count;
+                localStorage.setItem('rosaryCount', count);
+
+                if (vibrationEnabled && navigator.vibrate) {
+                    navigator.vibrate([50, 50, 50]); // اهتزاز مميز للتصفير
+                }
+            });
+
+            // تبديل حالة الاهتزاز
+            vibrationButton.addEventListener('click', () => {
+                vibrationEnabled = !vibrationEnabled;
+                localStorage.setItem('rosaryVibration', vibrationEnabled);
+                updateVibrationButton();
+            });
+
+            function updateVibrationButton() {
+                if (vibrationEnabled) {
+                    vibrationButton.textContent = 'الاهتزاز: مفعل 📳';
+                    vibrationButton.classList.remove('disabled');
+                } else {
+                    vibrationButton.textContent = 'الاهتزاز: معطل 📴';
+                    vibrationButton.classList.add('disabled');
+                }
+            }
+        });
+    </script>
+    <script type="module" src="firebase.js"></script>
+</body>
+
+</html>

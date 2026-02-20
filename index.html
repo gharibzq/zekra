@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ذِكرىٰ – منظم العبادة اليومي</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">🕌 ذِكرىٰ</a>
+            <div class="header-right">
+                <div class="points-badge" onclick="editUserName()" title="اضغط لتغيير اسمك">
+                    <span class="user-name-display">زائر</span>
+                    <span class="points-separator">|</span>
+                    <span class="pts-val" id="totalPoints">0</span> نقطة
+                </div>
+                <div class="nav-menu">
+                    <a href="index.html" class="nav-link active">الرئيسية</a>
+                    <a href="quran.html" class="nav-link">القرآن</a>
+                    <a href="dhikr.html" class="nav-link">الأذكار</a>
+                    <a href="rosary.html" class="nav-link">المسبحة</a>
+                    <a href="about.html" class="nav-link">لوحة الصدارة</a>
+                </div>
+                <button class="theme-toggle" id="darkModeToggle">🌙 الوضع الليلي</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1>🕌 ذِكرىٰ</h1>
+            <p>منظم العبادة اليومي - ابدأ رحلتك الروحية</p>
+            <div class="hero-buttons">
+                <a href="quran.html" class="btn">📖 اقرأ القرآن</a>
+                <a href="dhikr.html" class="btn btn-secondary">📿 الأذكار</a>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- الصلوات -->
+            <div class="card">
+                <div class="card-title">🕌 الصلوات اليومية</div>
+                <div class="prayer-list" id="prayersList"></div>
+                <div class="prayers-summary">
+                    المكتملة: <span id="prayersCount">0</span> / 5
+                </div>
+            </div>
+
+            <!-- ختمة القرآن -->
+            <div class="card">
+                <div class="card-title">📖 ختمة القرآن</div>
+                <div class="quran-input-wrapper">
+                    <input type="number" id="quranParts" class="quran-input" min="0" max="30"
+                        placeholder="عدد الأجزاء (0-30)">
+                    <button class="btn" onclick="updateQuranProgress()">تحديث</button>
+                </div>
+                <div class="progress-wrapper">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar" id="quranProgressBar" style="width: 0%">0%</div>
+                    </div>
+                    <div class="progress-text" id="quranProgressText">0 جزء من 30</div>
+                </div>
+            </div>
+
+            <!-- ملخص اليوم والتحفيز -->
+            <div class="card">
+                <div class="card-title">⭐ ملخص إنجازك اليوم</div>
+                <div class="summary-body">
+                    <div class="summary-row">
+                        <span>سلسلة الأيام المتتالية</span>
+                        <span class="summary-value" id="streakDays">0 يوم</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>نسبة ختمة القرآن</span>
+                        <span class="summary-value" id="summaryQuranPercent">0%</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>الصلوات المكتملة اليوم</span>
+                        <span class="summary-value" id="summaryPrayersDone">0 / 5</span>
+                    </div>
+                </div>
+                <div class="summary-goal">
+                    هدف اليوم: صلِّ الصلوات الخمس وحاول قراءة جزء واحد على الأقل 🌙
+                </div>
+                <div class="summary-message" id="motivationMessage"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+    <script type="module" src="firebase.js"></script>
+</body>
+
+</html>
