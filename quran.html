@@ -171,9 +171,15 @@
             }
         }
     </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#12b488">
+    <link rel="icon" type="image/png" href="logo.png">
 </head>
 
 <body>
+    <button class="zen-btn" onclick="document.body.classList.toggle('zen-mode')" title="وضع التركيز (إخفاء القوائم)">
+        👁️
+    </button>
     <header>
         <div class="header-content">
             <a href="index.html" class="logo">🕌 ذِكرىٰ</a>
@@ -237,7 +243,7 @@
 
     <div class="toast" id="toast"></div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=10"></script>
     <script src="quran.js"></script>
     <script type="module" src="firebase.js"></script>
 </body>

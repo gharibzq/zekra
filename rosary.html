@@ -12,7 +12,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 60vh;
+            min-height: 70vh;
             padding: 2rem;
             text-align: center;
         }
@@ -28,60 +28,144 @@
             color: var(--primary-light);
         }
 
-        .rosary-counter {
-            font-size: 4rem;
-            font-weight: 900;
-            color: var(--primary);
-            background: var(--card-light);
-            width: 200px;
-            height: 200px;
+        .rosary-text {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-weight: 600;
+            max-width: 400px;
+        }
+
+        body.dark-mode .rosary-text {
+            color: var(--text-dark);
+        }
+
+        /* 3D Ring Counter */
+        .ring-wrapper {
+            position: relative;
+            margin-bottom: 3rem;
+        }
+
+        .rosary-ring {
+            width: 280px;
+            height: 280px;
+            background: linear-gradient(145deg, #f0f0f0, #cacaca);
+            border-radius: 50%;
+            box-shadow: 20px 20px 60px rgba(0, 0, 0, 0.1), -20px -20px 60px rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: 4px solid #fff;
+            transition: all 0.5s ease;
+        }
+
+        body.dark-mode .rosary-ring {
+            background: linear-gradient(145deg, #2a3340, #1e252e);
+            box-shadow: 15px 15px 40px #151a21, -15px -15px 40px #2f3c4d;
+            border-color: #3b4859;
+        }
+
+        /* Themes */
+        .rosary-ring.theme-gold {
+            background: linear-gradient(145deg, #ffd700, #b8860b);
+            border-color: #fff9e6;
+            box-shadow: 15px 15px 40px rgba(184, 134, 11, 0.4), -15px -15px 40px rgba(255, 215, 0, 0.4);
+        }
+
+        .rosary-ring.theme-wood {
+            background: linear-gradient(145deg, #8b5a2b, #5c3a21);
+            border-color: #a06e40;
+            box-shadow: 15px 15px 40px rgba(92, 58, 33, 0.5), -15px -15px 40px rgba(139, 90, 43, 0.2);
+        }
+
+        .rosary-ring.theme-dark {
+            background: linear-gradient(145deg, #222, #000);
+            border-color: #333;
+            box-shadow: 15px 15px 40px rgba(0, 0, 0, 0.8), -15px -15px 40px rgba(50, 50, 50, 0.3);
+        }
+
+        .rosary-screen {
+            background: #9cad8e;
+            /* LCD color */
+            width: 140px;
+            height: 60px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.4), inset -2px -2px 5px rgba(255, 255, 255, 0.2);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #111;
+            margin-bottom: 30px;
+            border: 3px solid #7c8f6e;
+            text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .rosary-btn-main {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(145deg, var(--primary), var(--primary-dark));
             border-radius: 50%;
-            box-shadow: 0 10px 30px rgba(5, 150, 105, 0.2);
-            border: 10px solid rgba(5, 150, 105, 0.1);
-            margin-bottom: 3rem;
-            transition: all 0.2s ease;
+            border: none;
+            box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.3), inset 3px 3px 8px rgba(255, 255, 255, 0.3);
             cursor: pointer;
-            user-select: none;
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
             -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
-        body.dark-mode .rosary-counter {
-            background: var(--card-dark);
-            color: var(--primary-light);
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
-            border-color: rgba(16, 185, 129, 0.1);
+        .rosary-btn-main:active {
+            transform: scale(0.92);
+            box-shadow: inset 6px 6px 12px rgba(0, 0, 0, 0.5);
         }
 
-        .rosary-counter:active {
-            transform: scale(0.95);
-            box-shadow: 0 5px 15px rgba(5, 150, 105, 0.3);
+        .rosary-btn-small {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3), inset 2px 2px 4px rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: transform 0.1s;
+        }
+
+        .rosary-btn-small:active {
+            transform: scale(0.9);
+            box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-reset-ring {
+            top: 50px;
+            right: 40px;
+            background: linear-gradient(145deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-theme-ring {
+            top: 50px;
+            left: 40px;
+            background: linear-gradient(145deg, #f59e0b, #d97706);
+            color: white;
         }
 
         .rosary-controls {
             display: flex;
             gap: 1.5rem;
             margin-top: 1rem;
-        }
-
-        .btn-reset-rosary {
-            padding: 1rem 2rem;
-            font-size: 1.2rem;
-            background: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .btn-reset-rosary:hover {
-            background: #dc2626;
-            transform: translateY(-2px);
         }
 
         .vibration-toggle {
@@ -105,21 +189,16 @@
         .vibration-toggle.disabled {
             background: var(--text-muted);
         }
-
-        .rosary-text {
-            font-size: 1.5rem;
-            color: var(--text-muted);
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
-        body.dark-mode .rosary-text {
-            color: var(--text-dark);
-        }
     </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#12b488">
+    <link rel="icon" type="image/png" href="logo.png">
 </head>
 
 <body>
+    <button class="zen-btn" onclick="document.body.classList.toggle('zen-mode')" title="وضع التركيز (إخفاء القوائم)">
+        👁️
+    </button>
     <header>
         <div class="header-content">
             <a href="index.html" class="logo">🕌 ذِكرىٰ</a>
@@ -143,14 +222,26 @@
 
     <div class="container">
         <div class="rosary-container card">
-            <h1 class="rosary-title">المسبحة الإلكترونية</h1>
+            <h1 class="rosary-title">خاتم التسبيح الذكي</h1>
             <div class="rosary-text" id="rosaryText">سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ، وَلَا إِلَهَ إِلَّا
                 اللَّهُ، وَاللَّهُ أَكْبَرُ</div>
 
-            <div class="rosary-counter" id="rosaryCounter">0</div>
+            <div class="ring-wrapper">
+                <div class="rosary-ring" id="rosaryRing">
+                    <!-- Reset Button -->
+                    <button class="rosary-btn-small btn-reset-ring" id="resetRosary" title="تصفير">🔄</button>
+                    <!-- Theme Button -->
+                    <button class="rosary-btn-small btn-theme-ring" id="themeRosary" title="تغيير اللون">🎨</button>
+
+                    <!-- LCD Screen -->
+                    <div class="rosary-screen" id="rosaryCounter">0</div>
+
+                    <!-- Main Button -->
+                    <button class="rosary-btn-main" id="mainRosaryBtn">👆</button>
+                </div>
+            </div>
 
             <div class="rosary-controls">
-                <button class="btn-reset-rosary" id="resetRosary">تصفير العداد 🔄</button>
                 <button class="vibration-toggle" id="vibrationToggle">الاهتزاز: مفعل 📳</button>
             </div>
         </div>
@@ -158,36 +249,78 @@
 
     <div class="toast" id="toast"></div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=10"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const counterElement = document.getElementById('rosaryCounter');
             const resetButton = document.getElementById('resetRosary');
             const vibrationButton = document.getElementById('vibrationToggle');
+            const mainBtn = document.getElementById('mainRosaryBtn');
+            const themeBtn = document.getElementById('themeRosary');
+            const rosaryRing = document.getElementById('rosaryRing');
 
             let count = parseInt(localStorage.getItem('rosaryCount')) || 0;
-            let vibrationEnabled = localStorage.getItem('rosaryVibration') !== 'false'; // افتراضياً مفعل
+            let vibrationEnabled = localStorage.getItem('rosaryVibration') !== 'false';
+
+            // Themes logic
+            const themes = ['', 'theme-gold', 'theme-wood', 'theme-dark'];
+            let currentThemeIndex = parseInt(localStorage.getItem('rosaryThemeIndex')) || 0;
+
+            // Apply saved theme
+            if (themes[currentThemeIndex]) {
+                rosaryRing.classList.add(themes[currentThemeIndex]);
+            }
+
+            themeBtn.addEventListener('click', () => {
+                // Remove current theme
+                if (themes[currentThemeIndex]) {
+                    rosaryRing.classList.remove(themes[currentThemeIndex]);
+                }
+
+                // Next theme
+                currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+                localStorage.setItem('rosaryThemeIndex', currentThemeIndex);
+
+                // Apply new theme
+                if (themes[currentThemeIndex]) {
+                    rosaryRing.classList.add(themes[currentThemeIndex]);
+                }
+            });
 
             // تهيئة واجهة المستخدم
             counterElement.textContent = count;
             updateVibrationButton();
 
             // وظيفة الضغط على العداد للسبحة
-            counterElement.addEventListener('click', () => {
+            function incrementRosary() {
                 count++;
                 counterElement.textContent = count;
                 localStorage.setItem('rosaryCount', count);
 
                 // إضافة نقاط كل مائة تسبيحة
                 if (count > 0 && count % 100 === 0) {
-                    addPoints(50, `إتمام 100 تسبيحة (+50 نقطة)`);
+                    addPoints(50, `إتمام ${count} تسبيحة (+50 نقطة)`);
                 }
 
-                // تفعيل الاهتزاز إذا كان مسموحاً وخاصية الاهتزاز مدعومة في المتصفح/الجهاز
-                if (vibrationEnabled && navigator.vibrate) {
-                    navigator.vibrate(30); // اهتزاز خفيف جدا لمدة 30 ملي ثانية
+                // تحديث تحدي الأسبوع المهتم بالتسبيح
+                if (typeof window.updateWeeklyProgress === 'function') {
+                    window.updateWeeklyProgress('dhikr', 1);
                 }
-            });
+
+                // تفعيل الاهتزاز إذا كان مسموحاً
+                if (vibrationEnabled && navigator.vibrate) {
+                    // اهتزاز قوي ومختلف عند إتمام 33 أو مضاعفات الـ 100
+                    if (count % 33 === 0 && count % 99 !== 0 || count % 100 === 0) {
+                        navigator.vibrate([100, 50, 100]); // اهتزاز مميز وقوي
+                    } else {
+                        navigator.vibrate(30); // اهتزاز خفيف للعد العادي
+                    }
+                }
+            }
+
+            // ربط الضغط بكل من الزر الرئيسي والشاشة للراحة
+            mainBtn.addEventListener('click', incrementRosary);
+            counterElement.addEventListener('click', incrementRosary);
 
             // تصفير العداد
             resetButton.addEventListener('click', () => {

@@ -145,12 +145,17 @@ function showToast(message) {
 // ============================================
 function loadPrayers() {
     const saved = localStorage.getItem('prayers');
-    if (!saved) {
+    const savedDate = localStorage.getItem('prayersDate');
+    const today = new Date().toDateString();
+
+    if (!saved || savedDate !== today) {
+        // إذا كان يوم جديد أو لا توجد صلوات محفوظة، تصفير الصلوات
         const initial = {};
         prayers.forEach(p => {
             initial[p.id] = { completed: false, pointsGiven: false };
         });
         localStorage.setItem('prayers', JSON.stringify(initial));
+        localStorage.setItem('prayersDate', today);
         return initial;
     }
     return JSON.parse(saved);
@@ -232,21 +237,49 @@ function updateQuranProgress() {
     const input = document.getElementById('quranParts');
     if (!input) return;
 
-    const parts = parseInt(input.value) || 0;
+    let parts = parseInt(input.value) || 0;
 
     if (parts < 0 || parts > 30) {
         showToast('الرجاء إدخال عدد بين 0 و 30');
         return;
     }
 
-    const oldParts = parseInt(localStorage.getItem('quranParts') || 0);
-    localStorage.setItem('quranParts', parts);
-    updateQuranDisplay(parts);
+    const oldParts = parseInt(localStorage.getItem('quranParts') || '0');
+    let maxParts = parseInt(localStorage.getItem('quranMaxParts') || '0');
+    let khatmahs = parseInt(localStorage.getItem('quranKhatmahs') || '0');
 
-    if (parts > oldParts) {
-        const added = parts - oldParts;
-        addPoints(added * 20, `تحديث ختمة القرآن (+${added * 20} نقطة)`);
+    // حفظ التقدم الحالي
+    localStorage.setItem('quranParts', parts);
+
+    // التحقق من النقاط المستحقة (فقط للأجزاء الجديدة التي لم تُقرأ من قبل في هذه الختمة)
+    if (parts > maxParts) {
+        const added = parts - maxParts;
+        addPoints(added * 20, `تلاوة قرآن جديد (+${added * 20} نقطة)`);
+
+        // تحديث تحدي الأسبوع إذا كان التحدي قرآني
+        if (typeof window.updateWeeklyProgress === 'function') {
+            window.updateWeeklyProgress('quran', added);
+        }
+
+        // تحديث أقصى جزء تم الوصول إليه في هذه الختمة
+        maxParts = parts;
+        localStorage.setItem('quranMaxParts', maxParts);
     }
+
+    // إذا أتم 30 جزء (ختمة كاملة)
+    let khatmahClaimed = localStorage.getItem('quranKhatmahClaimed') === 'true';
+    if (parts === 30 && !khatmahClaimed) {
+        khatmahs++;
+        localStorage.setItem('quranKhatmahs', khatmahs);
+
+        // منع أخذ الجائزة مرة أخرى إلا بعد بدء ختمة جديدة
+        localStorage.setItem('quranKhatmahClaimed', 'true');
+
+        // جائزة كبرى للختمة
+        addPoints(500, `🎉 مبارك إتمام ختمة القرآن! (+500 نقطة)`);
+    }
+
+    updateQuranDisplay(parts);
 }
 
 function updateQuranDisplay(parts) {
@@ -254,6 +287,20 @@ function updateQuranDisplay(parts) {
     const progressBar = document.getElementById('quranProgressBar');
     const progressText = document.getElementById('quranProgressText');
     const input = document.getElementById('quranParts');
+    const journeyMap = document.getElementById('quranJourneyMap');
+    const khatmahBadge = document.getElementById('khatmahCountBadge');
+
+    let khatmahs = parseInt(localStorage.getItem('quranKhatmahs') || '0');
+
+    if (khatmahBadge && khatmahs > 0) {
+        khatmahBadge.textContent = `${khatmahs} ختمات`;
+        khatmahBadge.style.display = 'inline-block';
+    }
+
+    const khatmahMsg = document.getElementById('khatmahCompleteMsg');
+    if (khatmahMsg) {
+        khatmahMsg.style.display = (parts === 30) ? 'block' : 'none';
+    }
 
     if (progressBar) {
         progressBar.style.width = percentage + '%';
@@ -265,7 +312,49 @@ function updateQuranDisplay(parts) {
     if (input) {
         input.value = parts;
     }
+
+    // Render Journey Map if it exists (on home page)
+    if (journeyMap) {
+        journeyMap.innerHTML = ''; // إفراغ الخريطة
+
+        for (let i = 1; i <= 30; i++) {
+            const node = document.createElement('div');
+            node.className = 'journey-node';
+            node.textContent = i;
+            node.title = `الجزء ${i}`;
+
+            if (i <= parts) {
+                node.classList.add('completed');
+            } else if (i === parts + 1) {
+                node.classList.add('current');
+                node.title = `الجزء ${i} (الحالي)`;
+            }
+
+            // إضافة ميزة النقر المتوافق مع الإدخال
+            node.onclick = () => {
+                if (input) {
+                    // إذا نقر على المتعقّد يرجع للخلف، وإلا يتقدم
+                    input.value = i;
+                    updateQuranProgress();
+                }
+            };
+
+            journeyMap.appendChild(node);
+        }
+    }
 }
+
+window.startNewKhatmah = function () {
+    localStorage.setItem('quranParts', 0);
+    localStorage.setItem('quranMaxParts', 0);
+    localStorage.removeItem('quranKhatmahClaimed');
+
+    const input = document.getElementById('quranParts');
+    if (input) input.value = 0;
+
+    updateQuranDisplay(0);
+    showToast('تم تصفير العداد لختمة جديدة! بالتوفيق 🌙');
+};
 
 // ============================================
 // حديث اليوم
@@ -352,6 +441,259 @@ function updateHomeSummary() {
 }
 
 // ============================================
+// السنن اليومية
+// ============================================
+const dailySunnahs = [
+    { title: 'السواك', desc: 'استخدام السواك عند الوضوء وقبل كل صلاة تطهيراً للفم ومرضاة للرب.' },
+    { title: 'النوم على طهارة', desc: 'الوضوء قبل النوم والنوم على الشق الأيمن اقتداءً بالنبي ﷺ.' },
+    { title: 'التبسم في وجه أخيك', desc: 'الابتسامة صدقة وتزرع المودة والمحبة في قلوب الآخرين.' },
+    { title: 'أذكار الصباح والمساء', desc: 'المحافظة عليها تحفظ المسلم من كل سوء وتجلب طمأنينة القلب.' },
+    { title: 'صلاة الضحى', desc: 'صلاة الأوابين وتعدل صدقة عن كل مفصل من مفاصل اليد.' },
+    { title: 'إفشاء السلام', desc: 'إلقاء السلام على من عرفت ومن لم تعرف.' },
+    { title: 'التيامن في اللبس', desc: 'البدء باليمين عند لبس الثوب وعند الانتعال.' }
+];
+
+// ============================================
+// أسماء الله الحسنى
+// ============================================
+const asmaulHusna = [
+    { name: 'الرَّحْمَنُ', meaning: 'الكثير الرحمة بعباده' },
+    { name: 'الرَّحِيمُ', meaning: 'الذي يرحم المؤمنين يوم القيامة' },
+    { name: 'الْمَلِكُ', meaning: 'صاحب الملك الذي يتصرف في ملكه كيف يشاء' },
+    { name: 'الْقُدُّوسُ', meaning: 'المنزه عن كل عيب ونقص' },
+    { name: 'السَّلَامُ', meaning: 'السالم من كل عيب ومنح السلامة لعباده' },
+    { name: 'الْمُؤْمِنُ', meaning: 'الذي أمن الناس من ظلمه وصدق رسله بالمعجزات' },
+    { name: 'الْمُهَيْمِنُ', meaning: 'الرقيب على كل شيء والمسيطر عليه' }
+];
+
+// ============================================
+// اختبر معلوماتك (السؤال اليومي)
+// ============================================
+const dailyQuiz = [
+    { question: 'ما السورة التي تُسمى قلب القرآن؟', options: ['البقرة', 'يس', 'الرحمن', 'الكهف'], answer: 1 },
+    { question: 'من هو أول سفير في الإسلام؟', options: ['مصعب بن عمير', 'أسامة بن زيد', 'علي بن أبي طالب', 'عمار بن ياسر'], answer: 0 },
+    { question: 'كم عدد أولي العزم من الرسل؟', options: ['ثلاثة', 'خمسة', 'سبعة', 'عشرة'], answer: 1 },
+    { question: 'ما هو أطول نهر في العالم المذكور مسماه كعنصر بالقرآن مجازاً بالنهر؟', options: ['النيل', 'الفرات', 'دجلة', 'نهر الكوثر'], answer: 3 },
+    { question: 'كم عدد سور القرآن الكريم؟', options: ['114', '110', '120', '112'], answer: 0 },
+    { question: 'من هي أول زوجة للنبي محمد ﷺ؟', options: ['عائشة رضي الله عنها', 'خديجة بنت خويلد رضي الله عنها', 'زينب رضي الله عنها', 'حفصة رضي الله عنها'], answer: 1 },
+    { question: 'في أي سنة هجرية فُرض صيام رمضان؟', options: ['السنة الأولى', 'السنة الثانية', 'السنة الثالثة', 'السنة الرابعة'], answer: 1 },
+    { question: 'ما السورة التي تخلو من بسملة في بدايتها؟', options: ['النمل', 'التوبة', 'الأنفال', 'يونس'], answer: 1 },
+    { question: 'من الصحابي الجليل الذي لُقب بـ "أمين هذه الأمة"؟', options: ['أبو بكر الصديق', 'عمر بن الخطاب', 'أبو عبيدة بن الجراح', 'عثمان بن عفان'], answer: 2 },
+    { question: 'ما هو اسم خازن الجنة؟', options: ['رضوان', 'مالك', 'جبريل', 'ميكائيل'], answer: 0 },
+    { question: 'ما هي أطول سورة في القرآن الكريم؟', options: ['آل عمران', 'النساء', 'المائدة', 'البقرة'], answer: 3 },
+    { question: 'من هو النبي الذي أُلقي في النار ونجاه الله منها؟', options: ['موسى عليه السلام', 'عيسى عليه السلام', 'إبراهيم عليه السلام', 'يوسف عليه السلام'], answer: 2 },
+    { question: 'كم عدد أركان الإسلام؟', options: ['ثلاثة أركان', 'أربعة أركان', 'خمسة أركان', 'ستة أركان'], answer: 2 },
+    { question: 'ما هي الغزوة التي جُرح فيها النبي ﷺ وكُسرت رَباعيته؟', options: ['غزوة بدر', 'غزوة أحد', 'غزوة الخندق', 'غزوة تبوك'], answer: 1 },
+    { question: 'من هو الصحابي الذي أشار على النبي بحفر الخندق؟', options: ['سلمان الفارسي', 'بلال بن رباح', 'علي بن أبي طالب', 'سعد بن معاذ'], answer: 0 },
+    { question: 'ما هي السورة التي تعدل ثلث القرآن الكريم؟', options: ['الفلق', 'الناس', 'الإخلاص', 'الكافرون'], answer: 2 },
+    { question: 'إلى أين كانت الهجرة الأولى للمسلمين؟', options: ['المدينة المنورة', 'الشام', 'الحبشة', 'الطائف'], answer: 2 },
+    { question: 'ما هو الشهر الهجري الذي يأتي بعد شهر رجب؟', options: ['شعبان', 'رمضان', 'جمادى الآخرة', 'شوال'], answer: 0 },
+    { question: 'من هو النبي الذي التهمه الحوت؟', options: ['يونس عليه السلام', 'أيوب عليه السلام', 'نوح عليه السلام', 'لوط عليه السلام'], answer: 0 },
+    { question: 'ما هي أول صلاة صلاها المسلمون بعد تحويل القبلة إلى الكعبة؟', options: ['الفجر', 'الظهر', 'العصر', 'المغرب'], answer: 2 }
+];
+
+function getDayOfYear() {
+    const today = new Date();
+    return Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+}
+
+function initDailyCards() {
+    // تجهيز سُنة اليوم
+    const sunnahTitle = document.getElementById('dailySunnahTitle');
+    const sunnahDesc = document.getElementById('dailySunnahDesc');
+    if (sunnahTitle && sunnahDesc) {
+        const day = getDayOfYear();
+        const sunnah = dailySunnahs[day % dailySunnahs.length];
+        sunnahTitle.textContent = sunnah.title;
+        sunnahDesc.textContent = sunnah.desc;
+
+        const doneRecord = JSON.parse(localStorage.getItem('dailySunnahDone') || '{}');
+        const sunnahBtn = document.getElementById('sunnahDoneBtn');
+        if (sunnahBtn) {
+            if (doneRecord.day === day && doneRecord.done) {
+                sunnahBtn.textContent = '✅ أنجزت سُنة اليوم';
+                sunnahBtn.classList.remove('btn-secondary');
+                sunnahBtn.style.background = 'var(--primary)';
+                sunnahBtn.style.color = 'white';
+                sunnahBtn.onclick = null;
+            }
+        }
+    }
+
+    // تجهيز اسم الله اليوم
+    const asmaName = document.getElementById('dailyAsmaName');
+    const asmaMeaning = document.getElementById('dailyAsmaMeaning');
+    if (asmaName && asmaMeaning) {
+        const day = getDayOfYear();
+        const asma = asmaulHusna[day % asmaulHusna.length];
+        asmaName.textContent = asma.name;
+        asmaMeaning.textContent = asma.meaning;
+    }
+
+    // تجهيز سؤال اليوم
+    initDailyQuiz();
+}
+
+function initDailyQuiz() {
+    const questionEl = document.getElementById('quizQuestion');
+    const optionsEl = document.getElementById('quizOptions');
+    if (!questionEl || !optionsEl) return;
+
+    const day = getDayOfYear();
+    const quiz = dailyQuiz[day % dailyQuiz.length];
+    const quizState = JSON.parse(localStorage.getItem('dailyQuizState') || '{}');
+
+    questionEl.textContent = quiz.question;
+    optionsEl.innerHTML = '';
+
+    const isAnsweredToday = quizState.day === day;
+
+    quiz.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-secondary';
+        btn.style.textAlign = 'right';
+        btn.style.justifyContent = 'flex-start';
+        btn.style.padding = '0.75rem 1rem';
+        btn.textContent = opt;
+
+        if (isAnsweredToday) {
+            btn.disabled = true;
+            if (index === quiz.answer) {
+                btn.style.background = 'var(--primary)';
+                btn.style.color = 'white';
+                btn.style.borderColor = 'var(--primary)';
+            } else if (index === quizState.selected) {
+                btn.style.background = '#ef4444'; // Red for wrong answer
+                btn.style.color = 'white';
+                btn.style.borderColor = '#ef4444';
+            }
+        } else {
+            btn.onclick = () => handleQuizAnswer(index, quiz.answer, day);
+        }
+
+        optionsEl.appendChild(btn);
+    });
+
+    const resultEl = document.getElementById('quizResult');
+    if (isAnsweredToday && resultEl) {
+        resultEl.style.display = 'block';
+        if (quizState.selected === quiz.answer) {
+            resultEl.textContent = '✅ إجابة صحيحة! حصلت على 50 نقطة.';
+            resultEl.style.color = 'var(--primary)';
+            resultEl.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+        } else {
+            resultEl.textContent = '❌ إجابة خاطئة. حظ أوفر غداً!';
+            resultEl.style.color = '#ef4444';
+            resultEl.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+        }
+    }
+}
+
+window.handleQuizAnswer = function (selectedIndex, correctIndex, day) {
+    const isCorrect = selectedIndex === correctIndex;
+    localStorage.setItem('dailyQuizState', JSON.stringify({ day: day, selected: selectedIndex }));
+
+    if (isCorrect && typeof addPoints === 'function') {
+        addPoints(50, 'إجابة صحيحة لسؤال اليوم (+50 نقطة)');
+    }
+
+    // إعادة بناء السؤال ليعكس حالة الاختيار
+    initDailyQuiz();
+};
+
+window.completeSunnah = function () {
+    const day = getDayOfYear();
+    localStorage.setItem('dailySunnahDone', JSON.stringify({ day: day, done: true }));
+    if (typeof addPoints === 'function') addPoints(10, 'تطبيق سُنة اليوم');
+    initDailyCards();
+};
+
+// ============================================
+// تهيئة التطبيق
+// ============================================
+const weeklyChallenges = [
+    { id: 'istighfar_1000', title: 'تحدي الاستغفار', desc: 'استغفر الله العظيم 1000 مرة هذا الأسبوع', goal: 1000, type: 'dhikr', actionUrl: 'dhikr.html', actionText: 'ابدأ الاستغفار' },
+    { id: 'quran_3_parts', title: 'تلاوة القرآن', desc: 'اقرأ 3 أجزاء من القرآن الكريم هذا الأسبوع', goal: 3, type: 'quran', actionUrl: 'quran.html', actionText: 'اقرأ الآن' },
+    { id: 'salawat_500', title: 'الصلاة على النبي', desc: 'صلِّ على النبي محمد ﷺ 500 مرة', goal: 500, type: 'dhikr', actionUrl: 'rosary.html', actionText: 'افتح المسبحة' }
+];
+
+function getWeekNumber() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+    const yearStart = new Date(d.getFullYear(), 0, 1);
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+function initWeeklyChallenge() {
+    const titleEl = document.getElementById('weeklyChallengeTitle');
+    const descEl = document.getElementById('weeklyChallengeDesc');
+    const progressTextEl = document.getElementById('challengeProgressText');
+    const progressBar = document.getElementById('challengeProgressBar');
+    const actionBtn = document.getElementById('challengeActionBtn');
+
+    if (!titleEl) return;
+
+    const currentWeek = getWeekNumber();
+    const challengeIndex = currentWeek % weeklyChallenges.length;
+    const challenge = weeklyChallenges[challengeIndex];
+
+    let progressData = JSON.parse(localStorage.getItem('weeklyChallenge') || '{"week": 0, "progress": 0, "completed": false}');
+    if (progressData.week !== currentWeek) {
+        progressData = { week: currentWeek, progress: 0, completed: false };
+        localStorage.setItem('weeklyChallenge', JSON.stringify(progressData));
+    }
+
+    titleEl.textContent = challenge.title;
+    descEl.textContent = challenge.desc;
+    actionBtn.textContent = challenge.actionText;
+    actionBtn.onclick = () => location.href = challenge.actionUrl;
+
+    const percentage = Math.min(100, Math.round((progressData.progress / challenge.goal) * 100));
+    progressTextEl.textContent = `${progressData.progress} / ${challenge.goal}`;
+    progressBar.style.width = `${percentage}%`;
+    progressBar.textContent = `${percentage}%`;
+
+    if (progressData.completed) {
+        actionBtn.textContent = '🥳 اكتمل التحدي!';
+        actionBtn.classList.remove('btn-secondary');
+        actionBtn.style.background = 'var(--primary)';
+        actionBtn.style.color = 'white';
+        actionBtn.style.border = 'none';
+        actionBtn.onclick = null;
+    }
+}
+
+window.updateWeeklyProgress = function (type, amount = 1) {
+    const currentWeek = getWeekNumber();
+    const challengeIndex = currentWeek % weeklyChallenges.length;
+    const challenge = weeklyChallenges[challengeIndex];
+
+    if (challenge.type !== type && type !== 'any') return;
+
+    let progressData = JSON.parse(localStorage.getItem('weeklyChallenge') || '{"week": 0, "progress": 0, "completed": false}');
+
+    if (progressData.week !== currentWeek) {
+        progressData = { week: currentWeek, progress: 0, completed: false };
+    }
+
+    if (progressData.completed) return;
+
+    progressData.progress += amount;
+
+    if (progressData.progress >= challenge.goal) {
+        progressData.progress = challenge.goal;
+        progressData.completed = true;
+        if (typeof addPoints === 'function') {
+            addPoints(100, `إكمال تحدي الأسبوع: ${challenge.title} (+100 نقطة)`);
+        }
+    }
+
+    localStorage.setItem('weeklyChallenge', JSON.stringify(progressData));
+    initWeeklyChallenge();
+};
+
+// ============================================
 // تهيئة التطبيق
 // ============================================
 function init() {
@@ -375,9 +717,41 @@ function init() {
         loadHadith();
     }
 
-    // تهيئة ملخص اليوم إذا كانت العناصر موجودة (الصفحة الرئيسية)
+    // تهيئة ميزات اليوم
+    initDailyCards();
+    initWeeklyChallenge();
     updateStreak();
     updateHomeSummary();
+
+    // تسجيل Service Worker للـ PWA مع تنظيف الكاش القديم بقوة
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                for (let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+
+            navigator.serviceWorker.register('./sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+
+                    // Force update if new version found
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // New update available, force reload
+                                window.location.reload();
+                            }
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.log('ServiceWorker registration failed: ', error);
+                });
+        });
+    }
 }
 
 // تشغيل التهيئة عند تحميل الصفحة

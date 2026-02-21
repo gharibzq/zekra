@@ -1,0 +1,17 @@
+{
+  "name": "ذِكرىٰ - Zekra",
+  "short_name": "ذِكرىٰ",
+  "description": "منظم العبادة اليومي للمسلم (قرآن، أذكار، مسبحة)",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#12b488",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

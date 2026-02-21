@@ -162,12 +162,23 @@ header {
     padding: 0 2rem;
 }
 
-/* Grid Layout */
+/* Grid Layout to Masonry */
 .main-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 1.5rem;
+    column-count: 3;
+    column-gap: 1.5rem;
     margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .main-grid {
+        column-count: 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-grid {
+        column-count: 1;
+    }
 }
 
 .full-width {
@@ -182,6 +193,11 @@ header {
     box-shadow: var(--shadow);
     transition: all 0.3s ease;
     border: 1px solid var(--border);
+    break-inside: avoid;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+    /* Ensure masonry handles it well */
+    width: 100%;
 }
 
 body.dark-mode .card {
@@ -252,10 +268,82 @@ body.dark-mode .btn-secondary {
 }
 
 body.dark-mode .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.2);
     border-color: var(--primary-light);
 }
 
+/* Weekly Challenge Card */
+.weekly-challenge-card {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05));
+    border: 2px solid rgba(245, 158, 11, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+body.dark-mode .weekly-challenge-card {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.05));
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.weekly-challenge-card::before {
+    content: '🌟';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    font-size: 6rem;
+    opacity: 0.1;
+    z-index: 0;
+}
+
+.weekly-challenge-card>* {
+    position: relative;
+    z-index: 1;
+}
+
+.challenge-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.challenge-icon {
+    font-size: 3rem;
+    background: rgba(255, 255, 255, 0.5);
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
+}
+
+body.dark-mode .challenge-icon {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.challenge-details h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 0.25rem;
+}
+
+body.dark-mode .challenge-details h3 {
+    color: var(--primary-light);
+}
+
+.challenge-details p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+
+body.dark-mode .challenge-details p {
+    color: var(--text-dark);
+}
+
+/* Badges */
 .btn-counter {
     padding: 0.5rem 1rem;
     background: var(--primary);
@@ -417,6 +505,50 @@ body.dark-mode .hero p {
     gap: 1rem;
     justify-content: center;
     flex-wrap: wrap;
+    margin-bottom: 2rem;
+}
+
+/* Global Counter */
+.global-counter-box {
+    background: var(--card-light);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    max-width: 400px;
+    margin: 0 auto;
+    box-shadow: 0 10px 25px rgba(5, 150, 105, 0.15);
+    border: 2px solid var(--primary-light);
+    transform: translateY(0);
+    transition: all 0.3s ease;
+}
+
+body.dark-mode .global-counter-box {
+    background: var(--card-dark);
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.global-counter-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(5, 150, 105, 0.25);
+}
+
+.global-counter-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+body.dark-mode .global-counter-title {
+    color: var(--primary-light);
+}
+
+.global-counter-value {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--accent);
+    font-family: monospace;
+    letter-spacing: 2px;
 }
 
 /* Prayers */
@@ -717,4 +849,184 @@ body.dark-mode .summary-message {
         right: 15px;
         left: 15px;
     }
+}
+
+/* ============================================
+   Zen Mode (Focus Mode)
+   ============================================ */
+body.zen-mode header,
+body.zen-mode .card-title,
+body.zen-mode .nav-menu {
+    display: none !important;
+}
+
+body.zen-mode .container {
+    margin-top: 1rem;
+    padding-bottom: 2rem;
+}
+
+body.zen-mode .card {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    padding: 0;
+}
+
+body.zen-mode .hero {
+    display: none;
+}
+
+.zen-btn {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.zen-btn:hover {
+    transform: scale(1.1);
+    background: var(--primary-dark);
+}
+
+body.dark-mode .zen-btn {
+    background: var(--primary-light);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    color: var(--bg-dark);
+}
+
+@media (max-width: 768px) {
+    .zen-btn {
+        bottom: 90px;
+        left: 20px;
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+
+    body.zen-mode .zen-btn {
+        bottom: 30px;
+        /* when nav is hidden */
+    }
+}
+
+/* ============================================
+   Smart Dhikr Completed State
+   ============================================ */
+.dhikr-completed {
+    opacity: 0.6;
+    background: rgba(16, 185, 129, 0.05) !important;
+    border-color: rgba(16, 185, 129, 0.2) !important;
+    filter: grayscale(0.5);
+}
+
+.dhikr-completed .counter-value {
+    color: var(--primary) !important;
+}
+
+.dhikr-item {
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ============================================
+   Visual Quran Journey Map
+   ============================================ */
+.quran-journey-map {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #f1f5f9;
+    border-radius: var(--radius);
+    position: relative;
+}
+
+body.dark-mode .quran-journey-map {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.journey-node {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: var(--card-light);
+    border: 2px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+}
+
+body.dark-mode .journey-node {
+    background: var(--card-dark);
+    border-color: #334155;
+    color: #94a3b8;
+}
+
+.journey-node.completed {
+    background: var(--primary);
+    border-color: var(--primary-dark);
+    color: white;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+    transform: scale(1.1);
+}
+
+body.dark-mode .journey-node.completed {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+}
+
+.journey-node.current {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: scale(1.15);
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
+    animation: pulse 2s infinite;
+}
+
+body.dark-mode .journey-node.current {
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1.15);
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+    }
+
+    70% {
+        transform: scale(1.2);
+        box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+    }
+
+    100% {
+        transform: scale(1.15);
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+    }
+}
+
+.quran-journey-controls {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
 }

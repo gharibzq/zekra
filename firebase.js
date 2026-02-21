@@ -133,3 +133,62 @@ window.renderGlobalLeaderboard = function () {
         listContainer.innerHTML = '<div style="text-align:center; padding: 2rem; color: red;">عذراً، حدث خطأ في تحميل لوحة الشرف.</div>';
     });
 }
+
+// ============================================ 
+// عداد الاستغفار العالمي (Global Istighfar Counter)
+// ============================================
+
+window.initGlobalCounter = function () {
+    const globalCounterValue = document.getElementById('globalIstighfarCounter');
+    const globalBtn = document.getElementById('globalIstighfarBtn');
+
+    if (!globalCounterValue || !globalBtn) return;
+
+    const counterRef = ref(database, 'global_stats/istighfar_count');
+
+    // قراءة العداد الحي
+    onValue(counterRef, (snapshot) => {
+        const val = snapshot.val() || 0;
+        globalCounterValue.textContent = val.toLocaleString('en-US');
+    });
+
+    // عند الضغط على زر الاستغفار
+    globalBtn.addEventListener('click', () => {
+        // تحديث القيمة محلياً لسرعة الاستجابة
+        const currentText = globalCounterValue.textContent.replace(/,/g, '');
+        const currentVal = parseInt(currentText) || 0;
+        globalCounterValue.textContent = (currentVal + 1).toLocaleString('en-US');
+
+        // تأثير بصري
+        globalBtn.style.transform = 'scale(0.95)';
+        setTimeout(() => globalBtn.style.transform = '', 100);
+
+        // إضافة نقاط للمستخدم شخصياً
+        if (typeof addPoints === 'function') {
+            addPoints(1, 'استغفار (عالمي)');
+        }
+
+        // جلب القيمة الحالية من السيرفر وزيادتها بواحد بشكل آمن
+        // ملاحظة: الطريقة الأفضل في بيئة الإنتاج هي استخدام runTransaction
+        // لكن للتبسيط ولتجنب استيراد دوال إضافية سنقوم بقراءة ثم كتابة سريعة
+        import("https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js").then((module) => {
+            const { runTransaction } = module;
+            runTransaction(counterRef, (currentData) => {
+                if (currentData === null) {
+                    return 1;
+                } else {
+                    return currentData + 1;
+                }
+            }).catch(error => console.error("Error updating global counter:", error));
+        });
+    });
+}
+
+// تشغيل العداد العالمي عند توفر العناصر
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(window.initGlobalCounter, 1000); // ننتظر قليلاً لضمان تحميل واجهة المستخدم
+    });
+} else {
+    setTimeout(window.initGlobalCounter, 1000);
+}

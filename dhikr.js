@@ -103,63 +103,112 @@ function saveDhikrData(data) {
 }
 
 // ============================================
-// عرض الأذكار
+// عرض الأذكار (الذكي والتفاعلي)
 // ============================================
+if (!window.sessionDhikr) window.sessionDhikr = {};
+
+const targetMap = {
+    'morning7': 3,
+    'morning17': 3,
+    'morning19': 3,
+    'evening5': 3,
+    'evening17': 3,
+    'evening19': 3,
+    'general1': 33,
+    'general2': 33,
+    'general3': 34,
+    'general6': 100,
+    'general8': 100
+};
+
 function renderDhikrList(list, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
     const dhikrData = loadDhikrData();
-    
+
     container.innerHTML = '';
-    list.forEach(item => {
+    list.forEach((item, index) => {
+        const target = targetMap[item.id] || 1;
+        if (window.sessionDhikr[item.id] === undefined) {
+            window.sessionDhikr[item.id] = target;
+        }
+
         const div = document.createElement('div');
         div.className = 'dhikr-item';
-        
+        div.id = `dhikr-item-${item.id}`;
+        // جعل العنصر قابلاً للنقر
+        div.style.cursor = 'pointer';
+        div.title = 'اضغط هنا لعد الذكر';
+
         const content = document.createElement('div');
         content.className = 'dhikr-content';
-        
+
         const text = document.createElement('div');
         text.className = 'dhikr-text';
         text.textContent = item.text;
-        
+
         const translation = document.createElement('div');
         translation.className = 'dhikr-translation';
-        translation.textContent = item.translation;
-        
+        translation.textContent = item.translation + (target > 1 ? ` (${target} مرات)` : '');
+
         content.appendChild(text);
         content.appendChild(translation);
-        
+
         const counterWrapper = document.createElement('div');
         counterWrapper.className = 'dhikr-counter-wrapper';
-        
+
         const value = document.createElement('div');
         value.className = 'counter-value';
-        value.textContent = dhikrData[item.id] || 0;
-        value.id = `dhikr-${item.id}`;
-        
-        const actions = document.createElement('div');
-        actions.className = 'counter-actions';
-        
-        const btn = document.createElement('button');
-        btn.className = 'btn-counter';
-        btn.textContent = '+';
-        btn.onclick = () => incrementDhikr(item.id, item.text);
-        
-        const resetBtn = document.createElement('button');
-        resetBtn.className = 'btn-reset';
-        resetBtn.textContent = 'إعادة';
-        resetBtn.onclick = () => resetDhikr(item.id);
-        
-        actions.appendChild(btn);
-        actions.appendChild(resetBtn);
-        
+        value.textContent = window.sessionDhikr[item.id];
+        value.id = `session-val-${item.id}`;
+
+        const totalTracker = document.createElement('div');
+        totalTracker.style.fontSize = '0.85rem';
+        totalTracker.style.color = 'var(--text-muted)';
+        totalTracker.style.marginTop = '0.5rem';
+        totalTracker.textContent = `الإجمالي: ${dhikrData[item.id] || 0}`;
+        totalTracker.id = `total-val-${item.id}`;
+
+        div.onclick = (e) => {
+            if (window.sessionDhikr[item.id] > 0) {
+                window.sessionDhikr[item.id]--;
+                value.textContent = window.sessionDhikr[item.id];
+
+                // زيادة الإجمالي
+                incrementDhikr(item.id, item.text);
+                const currentTotal = loadDhikrData()[item.id] || 0;
+                totalTracker.textContent = `الإجمالي: ${currentTotal}`;
+
+                // تأثير بصري للضغط
+                div.style.transform = 'scale(0.98)';
+                setTimeout(() => div.style.transform = '', 150);
+
+                if (window.sessionDhikr[item.id] === 0) {
+                    div.classList.add('dhikr-completed');
+                    // التمرير التلقائي للعنصر التالي
+                    const nextItem = list[index + 1];
+                    if (nextItem) {
+                        const nextItemEl = document.getElementById(`dhikr-item-${nextItem.id}`);
+                        if (nextItemEl) {
+                            nextItemEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }
+                }
+            }
+        };
+
         counterWrapper.appendChild(value);
-        counterWrapper.appendChild(actions);
-        
+        counterWrapper.appendChild(totalTracker);
+
         div.appendChild(content);
         div.appendChild(counterWrapper);
         container.appendChild(div);
+
+        // إذا كان مكتملاً من قبل
+        if (window.sessionDhikr[item.id] === 0) {
+            div.classList.add('dhikr-completed');
+        }
     });
 }
 
@@ -170,13 +219,11 @@ function incrementDhikr(id, text) {
     const data = loadDhikrData();
     data[id] = (data[id] || 0) + 1;
     saveDhikrData(data);
-    
-    const valueElement = document.getElementById(`dhikr-${id}`);
-    if (valueElement) {
-        valueElement.textContent = data[id];
-    }
-    
     addPoints(2, text);
+
+    if (typeof window.updateWeeklyProgress === 'function') {
+        window.updateWeeklyProgress('dhikr', 1);
+    }
 }
 
 // ============================================
@@ -186,7 +233,7 @@ function resetDhikr(id) {
     const data = loadDhikrData();
     data[id] = 0;
     saveDhikrData(data);
-    
+
     const valueElement = document.getElementById(`dhikr-${id}`);
     if (valueElement) {
         valueElement.textContent = '0';
@@ -198,35 +245,35 @@ function resetDhikr(id) {
 // ============================================
 function updateStats() {
     const dhikrData = loadDhikrData();
-    
+
     let total = 0;
     let morning = 0;
     let evening = 0;
     let general = 0;
-    
+
     morningDhikr.forEach(d => {
         const count = dhikrData[d.id] || 0;
         morning += count;
         total += count;
     });
-    
+
     eveningDhikr.forEach(d => {
         const count = dhikrData[d.id] || 0;
         evening += count;
         total += count;
     });
-    
+
     generalDhikr.forEach(d => {
         const count = dhikrData[d.id] || 0;
         general += count;
         total += count;
     });
-    
+
     const totalElement = document.getElementById('totalDhikr');
     const morningElement = document.getElementById('morningDhikr');
     const eveningElement = document.getElementById('eveningDhikr');
     const generalElement = document.getElementById('generalDhikr');
-    
+
     if (totalElement) totalElement.textContent = total;
     if (morningElement) morningElement.textContent = morning;
     if (eveningElement) eveningElement.textContent = evening;

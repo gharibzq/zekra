@@ -5,7 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ذِكرىٰ – منظم العبادة اليومي</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=4">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#12b488">
+    <link rel="icon" type="image/png" href="logo.png">
 </head>
 
 <body>
@@ -39,6 +42,13 @@
                 <a href="quran.html" class="btn">📖 اقرأ القرآن</a>
                 <a href="dhikr.html" class="btn btn-secondary">📿 الأذكار</a>
             </div>
+
+            <div class="global-counter-box">
+                <div class="global-counter-title">🌐 عداد الاستغفار العالمي</div>
+                <div class="global-counter-value" id="globalIstighfarCounter">...</div>
+                <button class="btn btn-counter" style="margin-top: 10px; width: 100%; border-radius: 50px;"
+                    id="globalIstighfarBtn">أستغفر الله العظيم</button>
+            </div>
         </div>
 
         <!-- Main Grid -->
@@ -52,19 +62,107 @@
                 </div>
             </div>
 
-            <!-- ختمة القرآن -->
+            <!-- ختمة القرآن (الرحلة البصرية) -->
             <div class="card">
-                <div class="card-title">📖 ختمة القرآن</div>
-                <div class="quran-input-wrapper">
-                    <input type="number" id="quranParts" class="quran-input" min="0" max="30"
-                        placeholder="عدد الأجزاء (0-30)">
-                    <button class="btn" onclick="updateQuranProgress()">تحديث</button>
+                <div class="card-title" style="justify-content: space-between;">
+                    <span>📖 رحلة ختمة القرآن</span>
+                    <span id="khatmahCountBadge"
+                        style="font-size: 0.9rem; background: var(--primary); color: white; padding: 0.2rem 0.8rem; border-radius: 50px; display: none;">0
+                        ختمات</span>
                 </div>
+
+                <!-- Visual Map -->
+                <div class="quran-journey-map" id="quranJourneyMap">
+                    <!-- سيتم إضافة النقاط (Nodes) هنا عبر JavaScript -->
+                </div>
+
+                <div class="quran-journey-controls">
+                    <div class="quran-input-wrapper"
+                        style="margin-bottom: 0; flex: 1; display: flex; align-items: center; justify-content: center; gap: 1rem;">
+                        <input type="number" id="quranParts" class="quran-input" min="0" max="30"
+                            placeholder="عدد الأجزاء (0-30)" style="max-width: 150px; text-align: center;">
+                        <button class="btn" onclick="updateQuranProgress()">تحديث الإنجاز</button>
+                    </div>
+                </div>
+
                 <div class="progress-wrapper">
                     <div class="progress-bar-bg">
                         <div class="progress-bar" id="quranProgressBar" style="width: 0%">0%</div>
                     </div>
                     <div class="progress-text" id="quranProgressText">0 جزء من 30</div>
+                </div>
+
+                <div id="khatmahCompleteMsg"
+                    style="display: none; margin-top: 1.5rem; text-align: center; background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 12px; border: 1px dashed var(--primary);">
+                    <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">🎉 مبارك لك إتمام الختمة!</div>
+                    <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">لقد حصلت على 500 نقطة
+                        كجائزة كبرى.</div>
+                    <button class="btn" onclick="startNewKhatmah()" style="width: 100%;">البدء بختمة جديدة</button>
+                </div>
+            </div>
+            <!-- تحدي الأسبوع -->
+            <div class="card weekly-challenge-card" style="z-index: 10;">
+                <div class="card-title" style="position: relative; z-index: 2;">🏆 تحدي الأسبوع</div>
+                <div class="challenge-content" style="position: relative; z-index: 2;">
+                    <div class="challenge-icon">🎯</div>
+                    <div class="challenge-details">
+                        <h3 id="weeklyChallengeTitle">البحث عن تحدٍ...</h3>
+                        <p id="weeklyChallengeDesc">الرجاء الانتظار</p>
+                    </div>
+                </div>
+                <div class="progress-wrapper" style="position: relative; z-index: 2;">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar" id="challengeProgressBar" style="width: 0%">0%</div>
+                    </div>
+                    <div class="progress-text" id="challengeProgressText">0 / 0</div>
+                </div>
+                <button class="btn btn-secondary" id="challengeActionBtn"
+                    style="width: 100%; margin-top: 1rem; position: relative; z-index: 2;"
+                    onclick="location.href='dhikr.html'">ابدأ التحدي الآن</button>
+            </div>
+
+            <!-- سُنة اليوم -->
+            <div class="card sunnah-card"
+                style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05)); border: 2px solid rgba(16, 185, 129, 0.2);">
+                <div class="card-title">✨ سُنة اليوم</div>
+                <div class="sunnah-content" style="text-align: center; margin: 1.5rem 0;">
+                    <h3 id="dailySunnahTitle" style="color: var(--primary); font-size: 1.3rem; margin-bottom: 0.5rem;">
+                        سنن ترفع درجاتك</h3>
+                    <p id="dailySunnahDesc" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">...
+                    </p>
+                </div>
+                <button class="btn btn-secondary" id="sunnahDoneBtn" style="width: 100%;"
+                    onclick="completeSunnah()">أتممت السُنة (+10 نقطة)</button>
+            </div>
+
+            <!-- اسم الله اليوم -->
+            <div class="card asma-card"
+                style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(37, 99, 235, 0.05)); border: 2px solid rgba(59, 130, 246, 0.2); text-align: center;">
+                <div class="card-title">📿 اسم الله اليوم</div>
+                <div class="asma-content" style="margin-top: 2rem;">
+                    <div class="asma-name" id="dailyAsmaName"
+                        style="font-size: 3rem; font-family: 'Amiri', serif; color: #2563eb; font-weight: 900; margin-bottom: 0.5rem;">
+                        الله</div>
+                    <div class="asma-meaning" id="dailyAsmaMeaning"
+                        style="color: var(--text-muted); font-size: 1.1rem;">المألوه المعبود المستحق لإفراده بالعبادة
+                    </div>
+                </div>
+            </div>
+
+            <!-- اختبر معلوماتك (السؤال اليومي) -->
+            <div class="card quiz-card"
+                style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(217, 119, 6, 0.05)); border: 2px solid rgba(245, 158, 11, 0.2);">
+                <div class="card-title">🤔 اختبر معلوماتك</div>
+                <div class="quiz-content" style="margin-top: 1rem;">
+                    <p id="quizQuestion"
+                        style="font-size: 1.1rem; font-weight: bold; margin-bottom: 1rem; color: var(--text-color);">
+                        جاري تحميل السؤال...</p>
+                    <div id="quizOptions" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <!-- Options will be injected via JS -->
+                    </div>
+                    <div id="quizResult"
+                        style="margin-top: 1rem; font-weight: bold; font-size: 0.95rem; display: none; padding: 0.75rem; border-radius: 8px;">
+                    </div>
                 </div>
             </div>
 
@@ -96,7 +194,7 @@
 
     <div class="toast" id="toast"></div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=10"></script>
     <script type="module" src="firebase.js"></script>
 </body>
 
